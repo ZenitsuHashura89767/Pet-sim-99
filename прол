@@ -1,0 +1,25 @@
+-- Settings
+getgenv().AutoUnbox = true
+
+-- Function to start the loop
+task.spawn(function()
+    print("Script started successfully!")
+    while getgenv().AutoUnbox do
+        task.wait(0.1) -- Adjust speed if needed
+        
+        -- Logic to find the box and fire the click event
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAppearanceLoaded:Wait()
+        local root = character:WaitForChild("HumanoidRootPart")
+
+        for _, box in pairs(workspace.Boxes:GetChildren()) do
+            if box:FindFirstChild("Health") and box.Health.Value > 0 then
+                local distance = (root.Position - box.Position).Magnitude
+                if distance < 20 then
+                    -- This fires the hit event directly to the server
+                    game:GetService("ReplicatedStorage").Network.Box_Hit:FireServer(box.Name)
+                end
+            end
+        end
+    end
+end)

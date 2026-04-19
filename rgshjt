@@ -1,0 +1,45 @@
+-- Settings
+getgenv().AutoAim = true
+local AimDistance = 50 -- Радиус поиска коробок
+
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local localPlayer = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+-- Функция поиска ближайшей коробки
+local function getClosestBox()
+    local closestBox = nil
+    local shortestDistance = AimDistance
+    
+    -- Проверяем папку с коробками (в Unboxing Sim это обычно workspace.Boxes)
+    local boxesFolder = workspace:FindFirstChild("Boxes")
+    if not boxesFolder then return nil end
+
+    for _, box in pairs(boxesFolder:GetChildren()) do
+        if box:IsA("BasePart") or box:FindFirstChild("MainPart") then
+            local part = box:IsA("BasePart") and box or box.MainPart
+            local distance = (localPlayer.Character.HumanoidRootPart.Position - part.Position).Magnitude
+            
+            if distance < shortestDistance then
+                closestBox = part
+                shortestDistance = distance
+            end
+        end
+    end
+    return closestBox
+end
+
+-- Основной цикл наведения
+RunService.RenderStepped:Connect(function()
+    if getgenv().AutoAim and localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local target = getClosestBox()
+        if target then
+            -- Плавное наведение камеры на центр коробки
+            local targetPos = target.Position
+            camera.CFrame = CFrame.new(camera.CFrame.Position, targetPos)
+        end
+    end
+end)
+
+print("Auto-Aim loaded!")

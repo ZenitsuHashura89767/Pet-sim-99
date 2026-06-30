@@ -1,0 +1,75 @@
+-- Pet Simulator 99: Final Auto-Farm Script
+if game:GetService("CoreGui"):FindFirstChild("SoccerPathUi") then
+    game:GetService("CoreGui").SoccerPathUi:Destroy()
+end
+
+local SoccerPathUi = Instance.new("ScreenGui", game:GetService("CoreGui"))
+SoccerPathUi.Name = "SoccerPathUi"
+
+local MainFrame = Instance.new("Frame", SoccerPathUi)
+MainFrame.Name = "MainFrame"
+MainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+MainFrame.Position = UDim2.new(0.05, 0, 0.4, 0)
+MainFrame.Size = UDim2.new(0, 180, 0, 180)
+MainFrame.Active = true
+MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+
+-- Minimize logic (остальные элементы UI создаются здесь)
+local MinimizeBtn = Instance.new("TextButton", MainFrame)
+MinimizeBtn.Text = "-"
+MinimizeBtn.Size = UDim2.new(0, 25, 0, 25)
+MinimizeBtn.Position = UDim2.new(0.82, 0, 0.05, 0)
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 65)
+
+local MiniButton = Instance.new("TextButton", SoccerPathUi)
+MiniButton.Text = "⚽"
+MiniButton.Size = UDim2.new(0, 50, 0, 50)
+MiniButton.Position = UDim2.new(0, 20, 0, 100)
+MiniButton.Visible = false
+MiniButton.Draggable = true
+Instance.new("UICorner", MiniButton).CornerRadius = UDim.new(0, 10)
+
+MinimizeBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false; MiniButton.Visible = true end)
+MiniButton.MouseButton1Click:Connect(function() MiniButton.Visible = false; MainFrame.Visible = true end)
+
+local ToggleButton = Instance.new("TextButton", MainFrame)
+ToggleButton.Position = UDim2.new(0.05, 0, 0.55, 0)
+ToggleButton.Size = UDim2.new(0.9, 0, 0, 50)
+ToggleButton.Text = "WALK: OFF"
+ToggleButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+Instance.new("UICorner", ToggleButton).CornerRadius = UDim.new(0, 8)
+
+-- Логика фарма
+_G.SoccerFarm = false
+
+local function findField()
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("BasePart") and (v.Name:lower():find("soccer") or v.Name:lower():find("pitch")) then
+            if v.Size.X > 50 and v.Size.Z > 50 then return v end
+        end
+    end
+end
+
+local function startFarm()
+    task.spawn(function()
+        local hum = game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
+        local root = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local field = findField()
+        local startPos = field and field.Position or root.Position
+        
+        while _G.SoccerFarm do
+            local z = (math.random(1, 20) * 5) - 40
+            local target = startPos + Vector3.new(math.random(-80, 80), 0, z)
+            hum:MoveTo(target)
+            task.wait(1.5)
+        end
+    end)
+end
+
+ToggleButton.MouseButton1Click:Connect(function()
+    _G.SoccerFarm = not _G.SoccerFarm
+    ToggleButton.Text = _G.SoccerFarm and "WALK: ON" or "WALK: OFF"
+    ToggleButton.BackgroundColor3 = _G.SoccerFarm and Color3.fromRGB(50, 180, 50) or Color3.fromRGB(200, 50, 50)
+    if _G.SoccerFarm then startFarm() end
+end)
